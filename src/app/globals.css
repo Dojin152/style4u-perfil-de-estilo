@@ -1,0 +1,104 @@
+@import 'tailwindcss';
+
+/*
+ * Paper, ink and one earth accent. The palette is deliberately close to the
+ * catalogue's own backgrounds so the looks sit on the page instead of floating
+ * on top of it, and there is no second accent: everything that needs to stand
+ * out does it with weight or with space.
+ */
+:root {
+  --papel: #f2efe9;
+  --superficie: #fbfaf7;
+  --tinta: #17150f;
+  --tinta-suave: #6c665c;
+  --tinta-tenue: #9a938a;
+  --linha: #ded8cd;
+  --linha-forte: #c8c1b4;
+  --acento: #8a3324;
+  --acento-tenue: #efe2dc;
+  /* The cool pole of the diverging meter: above the average of the user base is
+     warm, below it is cool, and the midpoint is the paper line. Checked for
+     colour-vision separation against the accent before it went in. */
+  --frio: #1a6d99;
+
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-papel: var(--papel);
+  --color-superficie: var(--superficie);
+  --color-tinta: var(--tinta);
+  --color-tinta-suave: var(--tinta-suave);
+  --color-tinta-tenue: var(--tinta-tenue);
+  --color-linha: var(--linha);
+  --color-linha-forte: var(--linha-forte);
+  --color-acento: var(--acento);
+  --color-acento-tenue: var(--acento-tenue);
+  --color-frio: var(--frio);
+
+  --font-sans: var(--fonte-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serifa: var(--fonte-serifa), Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius-painel: 3px;
+
+  --ease-saida: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  * {
+    border-color: var(--linha);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--papel);
+    color: var(--tinta);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Numbers that change in place must not make the row jump. */
+  [data-numero] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: var(--acento);
+    color: var(--superficie);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .rotulo {
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tinta-tenue);
+  }
+
+  .painel {
+    background: var(--superficie);
+    border: 1px solid var(--linha);
+    border-radius: var(--radius-painel);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
