@@ -19,6 +19,8 @@ import { CartaoCompartilhavel } from './cartao-compartilhavel'
 
 const PASSOS = 6
 
+const ROTULOS = ['Perfil de estilo', 'Cor', 'Marca', 'Ocasião', 'Seu arquétipo', 'Cartão']
+
 export function Revelacao({
   perfil,
   modo,
@@ -73,7 +75,6 @@ export function Revelacao({
 
   const conteudo = [
     <Fragment key="abertura">
-      <Rotulo>Perfil de estilo</Rotulo>
       <Titulo>{perfil.batalhas} batalhas</Titulo>
       <Texto>
         {modo === 'direcao'
@@ -82,7 +83,6 @@ export function Revelacao({
       </Texto>
     </Fragment>,
     <Fragment key="cor">
-      <Rotulo>Cor</Rotulo>
       <Titulo>{destaque(cor, resumo)?.chave ?? 'sem dados'}</Titulo>
       <Texto>{frase(destaque(cor, resumo), resumo)}</Texto>
       <div className="mt-7 flex gap-2">
@@ -105,7 +105,6 @@ export function Revelacao({
       )}
     </Fragment>,
     <Fragment key="marca">
-      <Rotulo>Marca</Rotulo>
       <Titulo>{destaque(marca, resumo)?.chave ?? 'sem dados'}</Titulo>
       <Texto>{frase(destaque(marca, resumo), resumo)}</Texto>
       {resumo === 'indice' && marca.porParticipacao && (
@@ -116,7 +115,6 @@ export function Revelacao({
       )}
     </Fragment>,
     <Fragment key="ocasiao">
-      <Rotulo>Ocasião</Rotulo>
       <Titulo>{destaque(ocasiao, resumo)?.chave ?? 'sem dados'}</Titulo>
       <Texto>{frase(destaque(ocasiao, resumo), resumo)}</Texto>
       <div className="mt-7 flex flex-wrap gap-1.5">
@@ -131,7 +129,6 @@ export function Revelacao({
       </div>
     </Fragment>,
     <Fragment key="arquetipo">
-      <Rotulo>Seu arquétipo</Rotulo>
       <Titulo pequeno={mistura}>
         {mistura ? vencedor.nome + ' com um pé em ' + vice.nome : vencedor.nome}
       </Titulo>
@@ -212,6 +209,8 @@ export function Revelacao({
           </span>
         ))}
       </div>
+
+      <span className="rotulo absolute top-[52px] left-6 z-20">{ROTULOS[passo]}</span>
 
       <button
         type="button"
@@ -323,15 +322,11 @@ function frase(item: Agregado | undefined, resumo: 'dominante' | 'indice') {
     : 'Esteve em ' + porcento(item.participacao) + ' das suas escolhas.'
 }
 
-function Rotulo({ children }: { children: React.ReactNode }) {
-  return <span className="rotulo">{children}</span>
-}
-
 function Titulo({ children, pequeno }: { children: React.ReactNode; pequeno?: boolean }) {
   return (
     <h2
       className={
-        'font-serifa mt-3 leading-[1.02] tracking-[-0.015em] ' +
+        'font-serifa leading-[1.02] tracking-[-0.015em] ' +
         (pequeno ? 'text-[32px]' : 'text-[40px]')
       }
     >
