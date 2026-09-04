@@ -1,18 +1,22 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { desenharCartao, type DadosDoCartao } from '@/lib/cartao'
+import { desenharCartao, type DadosDoCartao, type Formato } from '@/lib/cartao'
+
+const FORMATOS: { valor: Formato; rotulo: string }[] = [
+  { valor: 'feed', rotulo: '4:5' },
+  { valor: 'story', rotulo: '9:16' },
+]
 
 /**
- * The canvas is 1080 by 1350 whatever the screen is; CSS only scales the
- * preview. What the user sees here is the exact bitmap that gets shared, which
- * is the point of drawing it separately instead of photographing the screen.
+ * The canvas is 1080 wide whatever the screen is; CSS only scales the preview.
+ * What the user sees here is the exact bitmap that gets shared, which is the
+ * point of drawing it separately instead of photographing the screen.
  */
 export function CartaoCompartilhavel({ dados }: { dados: DadosDoCartao }) {
   const canvas = useRef<HTMLCanvasElement>(null)
-  const [estado, setEstado] = useState<'desenhando' | 'pronto' | 'compartilhando'>(
-    'desenhando'
-  )
+  const [formato, setFormato] = useState<Formato>('feed')
+  const [estado, setEstado] = useState<'desenhando' | 'pronto'>('desenhando')
 
   useEffect(() => {
     let cancelado = false
@@ -20,14 +24,14 @@ export function CartaoCompartilhavel({ dados }: { dados: DadosDoCartao }) {
     if (!elemento) return
 
     setEstado('desenhando')
-    desenharCartao(elemento, dados).then(() => {
+    desenharCartao(elemento, dados, formato).then(() => {
       if (!cancelado) setEstado('pronto')
     })
 
     return () => {
       cancelado = true
     }
-  }, [dados])
+  }, [dados, formato])
 
   async function arquivo() {
     const elemento = canvas.current
@@ -45,17 +49,15 @@ export function CartaoCompartilhavel({ dados }: { dados: DadosDoCartao }) {
     const imagem = await arquivo()
     if (!imagem) return
 
-    // The share sheet is the one part of this that has no web equivalent on
-    // desktop, so the download is not a fallback for failure: it is the desktop
-    // path, and the sheet is what the phone gets.
+    // A folha de compartilhamento não tem equivalente no navegador de mesa, então
+    // o download não é um plano B para falha: é o caminho do desktop, e a folha
+    // é o que o aparelho recebe.
     if (navigator.canShare?.({ files: [imagem] })) {
-      setEstado('compartilhando')
       try {
         await navigator.share({ files: [imagem], title: 'Meu perfil de estilo' })
       } catch {
-        // Cancelar a folha de compartilhamento não é erro.
+        // Cancelar a folha não é erro.
       }
-      setEstado('pronto')
       return
     }
 
@@ -69,21 +71,39 @@ export function CartaoCompartilhavel({ dados }: { dados: DadosDoCartao }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-1 items-center justify-center px-5">
+      <div className="flex min-h-0 flex-1 items-center justify-center px-5">
         <canvas
           ref={canvas}
           aria-label="Prévia do cartão de perfil"
-          className="border-linha max-h-full w-auto max-w-full rounded-[2px] border"
-          style={{ opacity: estado === 'desenhando' ? 0 : 1, transition: 'opacity 240ms' }}
+          className="border-linha max-h-full w-auto max-w-full rounded-[3px] border shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]"
+          style={{ opacity: estado === 'desenhando' ? 0 : 1, transition: 'opacity 260ms' }}
         />
       </div>
 
-      <div className="space-y-2 px-5 pt-4 pb-5">
+      <div className="px-5 pt-4 pb-5">
+        <div className="mb-3 flex items-center justify-center gap-1.5">
+          {FORMATOS.map((opcao) => (
+            <button
+              key={opcao.valor}
+              type="button"
+              onClick={() => setFormato(opcao.valor)}
+              className={
+                'rounded-full border px-3 py-1 text-[11px] transition-colors ' +
+                (formato === opcao.valor
+                  ? 'border-tinta text-tinta'
+                  : 'border-linha text-tinta-tenue hover:text-tinta-suave')
+              }
+            >
+              {opcao.rotulo}
+            </button>
+          ))}
+        </div>
+
         <button
           type="button"
           onClick={compartilhar}
           disabled={estado !== 'pronto'}
-          className="bg-tinta text-superficie w-full rounded-full py-3 text-[13px] font-medium disabled:opacity-40"
+          className="bg-tinta text-noite w-full rounded-full py-3 text-[13px] font-medium disabled:opacity-40"
         >
           Compartilhar
         </button>
@@ -91,7 +111,7 @@ export function CartaoCompartilhavel({ dados }: { dados: DadosDoCartao }) {
           type="button"
           onClick={salvar}
           disabled={estado !== 'pronto'}
-          className="border-linha-forte text-tinta w-full rounded-full border py-3 text-[13px] disabled:opacity-40"
+          className="border-linha-forte text-tinta mt-2 w-full rounded-full border py-3 text-[13px] disabled:opacity-40"
         >
           Salvar imagem
         </button>

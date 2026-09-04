@@ -27,7 +27,7 @@ export function Interruptor<T extends string>({
     <div
       role="radiogroup"
       aria-label={nome}
-      className="border-linha bg-papel inline-flex rounded-full border p-[3px]"
+      className="border-linha bg-carvao-alto inline-flex rounded-full border p-[3px]"
     >
       {opcoes.map((opcao) => {
         const ativo = opcao.valor === valor
@@ -41,7 +41,7 @@ export function Interruptor<T extends string>({
             onClick={() => aoTrocar(opcao.valor)}
             className={
               'relative rounded-full px-3.5 py-1.5 text-[13px] transition-colors ' +
-              (ativo ? 'text-superficie' : 'text-tinta-suave hover:text-tinta')
+              (ativo ? 'text-noite' : 'text-tinta-suave hover:text-tinta')
             }
           >
             {ativo && (

@@ -1,97 +1,101 @@
+import Image from 'next/image'
+import { Capa } from '@/components/capa'
 import { Experiencia } from '@/components/experiencia'
-import { REFERENCIAS_POR_ARQUETIPO, ARQUETIPOS, VERSAO_DO_CONJUNTO } from '@/lib/arquetipos'
+import { Navegacao } from '@/components/navegacao'
+import { Revelar } from '@/components/revelar'
 import { ACERVO } from '@/lib/acervo'
+import { ARQUETIPOS, REFERENCIAS_POR_ARQUETIPO, VERSAO_DO_CONJUNTO } from '@/lib/arquetipos'
 
 const RESUMO = [
   { rotulo: 'Endpoint', valor: 'uma passada, sem vetor no cliente' },
-  { rotulo: 'Arquétipos', valor: ARQUETIPOS.length + ' × ' + REFERENCIAS_POR_ARQUETIPO + ' referências' },
+  {
+    rotulo: 'Arquétipos',
+    valor: ARQUETIPOS.length + ' × ' + REFERENCIAS_POR_ARQUETIPO + ' referências',
+  },
   { rotulo: 'Acervo', valor: ACERVO.length + ' looks' },
   { rotulo: 'Conjunto', valor: VERSAO_DO_CONJUNTO },
 ]
 
 const REAL = [
-  'A agregação de cores, marcas, ocasiões e estilos, com exposição e vitória contadas separadamente.',
-  'A comparação com os arquétipos: cosseno, remoção do eixo comum e posição contra uma base de usuários.',
-  'O instantâneo gravado com versão do conjunto de referências, e o recálculo como ação deliberada.',
-  'A imagem compartilhável, desenhada em montagem própria de 1080 por 1350 e entregue à folha nativa quando o aparelho tem uma.',
-  'Os testes da matemática de similaridade, que rodam com npm test.',
+  'A agregação de cores, marcas, ocasiões e estilos, com exposição e vitória contadas separadamente, e o ranking pelo piso do intervalo de confiança.',
+  'A camada de arquétipos: cosseno, remoção do eixo comum, posição contra uma base de usuários e a decomposição do resultado por eixo.',
+  'O instantâneo gravado com versão do conjunto de referências, o recálculo como ação deliberada e a linha do tempo do perfil batalha a batalha.',
+  'A imagem compartilhável, desenhada em montagem própria nos dois formatos e entregue à folha nativa quando o aparelho tem uma.',
+  'Os dezessete testes da matemática de similaridade, que rodam com npm test.',
 ]
 
 const ENCENADO = [
   'As fotos do catálogo. Cada look é desenhado a partir das próprias etiquetas, porque imagem de loja parceira não entra numa demonstração pública.',
-  'As imagens de referência dos arquétipos, geradas a partir de um protótipo com semente fixa no lugar do material que o cliente vai fornecer.',
+  'As imagens de referência dos arquétipos, geradas a partir de um protótipo com semente fixa no lugar do material que você vai fornecer.',
   'A base de usuários que calibra a posição de cada perfil, que aqui é uma população sintética de quatrocentas pessoas.',
   'Sessão, autenticação e persistência: as batalhas vivem no navegador e vão inteiras no corpo da requisição.',
 ]
 
 export default function Pagina() {
   return (
-    <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-      <header className="flex items-center justify-between border-b py-5">
-        <span className="text-[15px] tracking-[-0.01em]">Style4U</span>
-        <span className="rotulo">Perfil de estilo</span>
-      </header>
+    <div className="grao" id="topo">
+      <Navegacao />
 
-      <main id="conteudo">
-        <section className="grid gap-10 border-b py-16 lg:grid-cols-[1.15fr_1fr] lg:gap-20 lg:py-24">
-          <div>
-            <p className="rotulo">Demonstração funcional</p>
-            <h1 className="font-serifa mt-5 text-[clamp(2.6rem,6vw,4.4rem)] leading-[0.96] tracking-[-0.02em]">
-              Um perfil de estilo que aguenta ser compartilhado
-            </h1>
-          </div>
+      <main>
+        <Capa resumo={RESUMO} />
 
-          <div className="flex flex-col justify-end gap-8">
-            <p className="text-tinta-suave max-w-lg text-[15px] leading-relaxed">
-              À esquerda, o que o usuário vê: as batalhas, a revelação e a imagem que sai
-              dela. À direita, o que o endpoint devolveu, com interruptores para trocar as
-              duas decisões que decidem se o resultado significa alguma coisa: como o vetor
-              de gosto é construído e o que se faz com o cosseno antes de mostrar um número.
-            </p>
+        <Experiencia />
 
-            <dl className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4 lg:grid-cols-2">
-              {RESUMO.map((item) => (
-                <div key={item.rotulo}>
-                  <dt className="rotulo">{item.rotulo}</dt>
-                  <dd className="mt-1 text-[13px]">{item.valor}</dd>
+        <section className="border-linha relative overflow-hidden border-t">
+          <Image
+            src="/textura-linho.jpg"
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover opacity-[0.07]"
+          />
+          <div className="from-noite via-noite/85 to-noite absolute inset-0 bg-gradient-to-b" />
+
+          <div className="relative mx-auto max-w-[1280px] px-5 py-24 sm:px-8 lg:py-32">
+            <Revelar>
+              <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
+                <div>
+                  <h2 className="font-serifa text-[clamp(1.8rem,3vw,2.4rem)] leading-tight">
+                    O que é real aqui
+                  </h2>
+                  <ul className="mt-6 space-y-4">
+                    {REAL.map((item) => (
+                      <li
+                        key={item}
+                        className="border-linha text-tinta-suave border-t pt-4 text-[13px] leading-relaxed"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              ))}
-            </dl>
-          </div>
-        </section>
 
-        <section className="py-14 lg:py-20">
-          <Experiencia />
-        </section>
-
-        <section className="grid gap-10 border-t py-16 lg:grid-cols-2 lg:gap-20">
-          <div>
-            <h2 className="font-serifa text-[26px] leading-tight">O que é real aqui</h2>
-            <ul className="mt-5 space-y-3">
-              {REAL.map((item) => (
-                <li key={item} className="text-tinta-suave border-t pt-3 text-[13px] leading-relaxed">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="font-serifa text-[26px] leading-tight">O que está encenado</h2>
-            <ul className="mt-5 space-y-3">
-              {ENCENADO.map((item) => (
-                <li key={item} className="text-tinta-suave border-t pt-3 text-[13px] leading-relaxed">
-                  {item}
-                </li>
-              ))}
-            </ul>
+                <div>
+                  <h2 className="font-serifa text-[clamp(1.8rem,3vw,2.4rem)] leading-tight">
+                    O que está encenado
+                  </h2>
+                  <ul className="mt-6 space-y-4">
+                    {ENCENADO.map((item) => (
+                      <li
+                        key={item}
+                        className="border-linha text-tinta-suave border-t pt-4 text-[13px] leading-relaxed"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </Revelar>
           </div>
         </section>
       </main>
 
-      <footer className="text-tinta-tenue flex flex-wrap items-center justify-between gap-3 border-t py-7 text-[12px]">
-        <span>Next.js · TypeScript · sem imagem externa · sem dependência de terceiros no navegador</span>
-        <span className="font-mono">{VERSAO_DO_CONJUNTO}</span>
+      <footer className="border-linha border-t">
+        <div className="text-tinta-tenue mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-5 py-8 text-[12px] sm:px-8">
+          <span>Next.js · TypeScript · fotografia de banco de imagens livre</span>
+          <span className="font-mono">{VERSAO_DO_CONJUNTO}</span>
+        </div>
       </footer>
     </div>
   )

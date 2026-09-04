@@ -12,13 +12,14 @@ export async function GET() {
       versao: VERSAO_DO_CONJUNTO,
       referenciasPorArquetipo: REFERENCIAS_POR_ARQUETIPO,
       dimensoes: CONJUNTO[0]?.centroide.length ?? 0,
-      arquetipos: CONJUNTO.map(({ id, nome, frase, descricao, paleta, tinta }) => ({
+      arquetipos: CONJUNTO.map(({ id, nome, frase, descricao, paleta, tinta, imagem }) => ({
         id,
         nome,
         frase,
         descricao,
         paleta,
         tinta,
+        imagem,
       })),
     },
     { headers: { 'cache-control': 'public, max-age=3600' } }

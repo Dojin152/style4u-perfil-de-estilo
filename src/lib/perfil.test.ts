@@ -130,6 +130,58 @@ describe('ranking das agregações', () => {
   })
 })
 
+describe('mapa e explicação', () => {
+  const perfil = calcularPerfil(batalhasEntre(ESTRUTURAL, SOLAR))
+
+  it('desenha os seis arquétipos num plano estável', () => {
+    expect(perfil.mapa).toHaveLength(6)
+    for (const ponto of perfil.mapa) {
+      expect(Math.abs(ponto.x)).toBeLessThanOrEqual(1.0001)
+      expect(Math.abs(ponto.y)).toBeLessThanOrEqual(1.0001)
+    }
+
+    // O plano sai só das referências, então não muda com o usuário.
+    const outro = calcularPerfil(batalhasEntre(SOLAR, ESTRUTURAL))
+    expect(outro.mapa).toEqual(perfil.mapa)
+  })
+
+  it('põe o usuário do lado do arquétipo que venceu', () => {
+    const alvo = perfil.mapa.find((ponto) => ponto.arquetipo === 'estrutural')
+    const oposto = perfil.mapa.find((ponto) => ponto.arquetipo === 'solar')
+    const usuario = perfil.variantes.direcao.ponto
+
+    const distancia = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+      Math.hypot(a.x - b.x, a.y - b.y)
+
+    expect(distancia(usuario, alvo!)).toBeLessThan(distancia(usuario, oposto!))
+  })
+
+  it('explica o resultado por eixos, e as parcelas somam o todo', () => {
+    const explicacao = perfil.variantes.direcao.explicacao
+    const total = explicacao.reduce((acc, item) => acc + Math.abs(item.peso), 0)
+
+    expect(explicacao.length).toBeGreaterThan(2)
+    expect(total).toBeGreaterThan(0.5)
+    expect(total).toBeLessThanOrEqual(1.0001)
+    expect(explicacao[0]?.palavra).toBeTruthy()
+  })
+})
+
+describe('linha do tempo', () => {
+  it('recalcula o perfil a cada passo e termina no número de batalhas jogadas', () => {
+    const batalhas = batalhasEntre(ESTRUTURAL, SOLAR)
+    const marcos = calcularPerfil(batalhas).historico.direcao
+
+    expect(marcos.length).toBeGreaterThan(3)
+    expect(marcos[0]?.batalha).toBe(1)
+    expect(marcos[marcos.length - 1]?.batalha).toBe(batalhas.length)
+  })
+
+  it('não devolve linha do tempo sem batalha', () => {
+    expect(calcularPerfil([]).historico.direcao).toEqual([])
+  })
+})
+
 describe('perfil incompleto', () => {
   it('não fecha antes do mínimo de batalhas', () => {
     const perfil = calcularPerfil([{ vencedor: 'l01', perdedor: 'l24' }])

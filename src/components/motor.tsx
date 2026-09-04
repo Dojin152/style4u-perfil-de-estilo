@@ -11,6 +11,7 @@ import {
   type Escala,
   type ModoVetor,
   type Perfil,
+  type Variante,
 } from '@/lib/perfil'
 import { Interruptor } from './interruptor'
 
@@ -148,7 +149,7 @@ export function Motor({
         </div>
 
         {perfil ? (
-          <pre className="border-linha bg-papel text-tinta-suave max-h-80 overflow-auto rounded-[2px] border p-4 font-mono text-[11px] leading-relaxed">
+          <pre className="border-linha bg-noite text-tinta-suave max-h-80 overflow-auto rounded-[3px] border p-4 font-mono text-[11px] leading-relaxed">
             {JSON.stringify(perfil, null, 2)}
           </pre>
         ) : (
@@ -212,7 +213,7 @@ function Pontuacoes({
               {escala === 'cru' ? cosseno(linha.cru) : (linha.z > 0 ? '+' : '') + numero(linha.z)}
             </span>
 
-            <span className="border-linha bg-superficie text-tinta-suave pointer-events-none absolute top-full right-0 z-20 mt-1 hidden rounded-[2px] border px-2.5 py-1.5 text-[11px] whitespace-nowrap shadow-sm group-hover:block">
+            <span className="vidro border-linha text-tinta-suave pointer-events-none absolute top-full right-0 z-20 mt-1 hidden rounded-[3px] border px-2.5 py-1.5 text-[11px] whitespace-nowrap group-hover:block">
               cosseno {cosseno(linha.cru)} · centrado {numero(linha.centrado)} · percentil{' '}
               {porcento(linha.percentil)}
             </span>
@@ -223,6 +224,55 @@ function Pontuacoes({
       <p className="text-tinta-suave mt-5 max-w-xl text-[13px] leading-relaxed">
         <Legenda modo={modo} escala={escala} diferenca={diferenca} />
       </p>
+
+      <Explicacao variante={variante} />
+    </div>
+  )
+}
+
+/**
+ * Cosine is a sum over the axes, so it can be taken apart again: each term is
+ * what one axis contributed, and the sign says whether it pulled the result
+ * towards the archetype or away from it. This is the difference between a screen
+ * that announces a label and one that can be argued with.
+ */
+function Explicacao({ variante }: { variante: Variante }) {
+  const primeiro = variante.pontuacoes[0]
+  if (!primeiro || variante.explicacao.length === 0) return null
+
+  const maior = Math.max(...variante.explicacao.map((item) => Math.abs(item.peso)))
+
+  return (
+    <div className="border-linha mt-8 border-t pt-6">
+      <p className="rotulo">Por que {NOMES.get(primeiro.arquetipo)}</p>
+
+      <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
+        {variante.explicacao.map((item) => (
+          <li key={item.eixo} className="grid grid-cols-[150px_1fr_46px] items-center gap-3">
+            <span className="text-tinta-suave truncate text-[12px]">{item.palavra}</span>
+            <span className="relative block h-1.5">
+              <span className="bg-linha absolute inset-y-0 left-1/2 w-px" />
+              <motion.span
+                className="absolute top-0 bottom-0 rounded-full"
+                initial={false}
+                animate={{
+                  width: (Math.abs(item.peso) / maior) * 50 + '%',
+                  left:
+                    item.peso >= 0
+                      ? '50%'
+                      : 50 - (Math.abs(item.peso) / maior) * 50 + '%',
+                }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                style={{ background: item.peso >= 0 ? 'var(--acento)' : 'var(--frio)' }}
+              />
+            </span>
+            <span className="text-tinta-tenue text-right font-mono text-[10px]" data-numero>
+              {item.peso >= 0 ? '+' : '-'}
+              {Math.round(Math.abs(item.peso) * 100)}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

@@ -1,48 +1,49 @@
 @import 'tailwindcss';
 
 /*
- * Paper, ink and one earth accent. The palette is deliberately close to the
- * catalogue's own backgrounds so the looks sit on the page instead of floating
- * on top of it, and there is no second accent: everything that needs to stand
- * out does it with weight or with space.
+ * Night, paper-white ink and two poles.
+ *
+ * The page is dark because the product it demonstrates is a reveal: the screen
+ * that matters is a photograph with type on it, and a light page around it
+ * fights the photograph for attention. Everything that is not the reveal
+ * recedes: hairlines instead of borders, one warm accent, one cool one, and no
+ * third colour anywhere.
  */
 :root {
-  --papel: #f2efe9;
-  --superficie: #fbfaf7;
-  --tinta: #17150f;
-  --tinta-suave: #6c665c;
-  --tinta-tenue: #9a938a;
-  --linha: #ded8cd;
-  --linha-forte: #c8c1b4;
-  --acento: #8a3324;
-  --acento-tenue: #efe2dc;
-  /* The cool pole of the diverging meter: above the average of the user base is
-     warm, below it is cool, and the midpoint is the paper line. Checked for
-     colour-vision separation against the accent before it went in. */
-  --frio: #1a6d99;
+  --noite: #0a0a0b;
+  --carvao: #121214;
+  --carvao-alto: #17171a;
+  --tinta: #f4f1ea;
+  --tinta-suave: #9d998f;
+  --tinta-tenue: #857f76;
+  --linha: rgb(244 241 234 / 0.1);
+  --linha-forte: rgb(244 241 234 / 0.2);
 
-  color-scheme: light;
+  /* Acima da média dos usuários é quente, abaixo é frio, e o meio é a linha.
+     O par foi conferido para separação em daltonismo antes de entrar. */
+  --acento: #d9714f;
+  --frio: #4ea3d1;
+
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-papel: var(--papel);
-  --color-superficie: var(--superficie);
+  --color-noite: var(--noite);
+  --color-carvao: var(--carvao);
+  --color-carvao-alto: var(--carvao-alto);
   --color-tinta: var(--tinta);
   --color-tinta-suave: var(--tinta-suave);
   --color-tinta-tenue: var(--tinta-tenue);
   --color-linha: var(--linha);
   --color-linha-forte: var(--linha-forte);
   --color-acento: var(--acento);
-  --color-acento-tenue: var(--acento-tenue);
   --color-frio: var(--frio);
 
   --font-sans: var(--fonte-sans), ui-sans-serif, system-ui, sans-serif;
   --font-serifa: var(--fonte-serifa), Georgia, 'Times New Roman', serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --radius-painel: 3px;
-
-  --ease-saida: cubic-bezier(0.16, 1, 0.3, 1);
+  --radius-painel: 4px;
 }
 
 @layer base {
@@ -52,48 +53,102 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--papel);
+    background-color: var(--noite);
     color: var(--tinta);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
 
-  /* Numbers that change in place must not make the row jump. */
+  /* Números que trocam de valor no lugar não podem empurrar a linha. */
   [data-numero] {
     font-variant-numeric: tabular-nums;
   }
 
   ::selection {
     background: var(--acento);
-    color: var(--superficie);
+    color: var(--noite);
   }
 
   :focus-visible {
     outline: 2px solid var(--acento);
-    outline-offset: 2px;
+    outline-offset: 3px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--linha-forte);
+    border-radius: 999px;
   }
 }
 
 @layer components {
   .rotulo {
     font-size: 0.6875rem;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--tinta-tenue);
   }
 
   .painel {
-    background: var(--superficie);
+    position: relative;
+    background: var(--carvao);
     border: 1px solid var(--linha);
     border-radius: var(--radius-painel);
+  }
+
+  /* A hairline of light along the top edge: on a dark page it is what tells a
+     panel apart from the ground without drawing a heavier border. */
+  .painel::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(244 241 234 / 0.14) 22%,
+      rgb(244 241 234 / 0.14) 78%,
+      transparent
+    );
+  }
+
+  .vidro {
+    background: rgb(10 10 11 / 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  /* Film grain. Fixed, so it does not swim when the page scrolls. */
+  .grao::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23r)'/%3E%3C/svg%3E");
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {

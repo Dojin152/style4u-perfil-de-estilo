@@ -19,12 +19,15 @@ export interface Arquetipo {
   descricao: string
   paleta: string[]
   tinta: string
+  /** Uma das seis fotografias que a revelação e o cartão usam de fundo. */
+  imagem: string
   eixos: Eixos
 }
 
 export const ARQUETIPOS: Arquetipo[] = [
   {
     id: 'estrutural',
+    imagem: '/arquetipos/estrutural.jpg',
     nome: 'Minimalista Estrutural',
     frase: 'Pouca peça, corte exato.',
     descricao:
@@ -35,6 +38,7 @@ export const ARQUETIPOS: Arquetipo[] = [
   },
   {
     id: 'romantico',
+    imagem: '/arquetipos/romantico.jpg',
     nome: 'Romântico Suave',
     frase: 'O tecido decide antes do corte.',
     descricao:
@@ -45,6 +49,7 @@ export const ARQUETIPOS: Arquetipo[] = [
   },
   {
     id: 'urbano',
+    imagem: '/arquetipos/urbano.jpg',
     nome: 'Urbano de Rua',
     frase: 'Conforto que não pede licença.',
     descricao:
@@ -55,6 +60,7 @@ export const ARQUETIPOS: Arquetipo[] = [
   },
   {
     id: 'classico',
+    imagem: '/arquetipos/classico.jpg',
     nome: 'Clássico de Trabalho',
     frase: 'A mesma regra há trinta anos.',
     descricao:
@@ -65,6 +71,7 @@ export const ARQUETIPOS: Arquetipo[] = [
   },
   {
     id: 'solar',
+    imagem: '/arquetipos/solar.jpg',
     nome: 'Solar de Verão',
     frase: 'Textura natural, cor de terra.',
     descricao:
@@ -75,6 +82,7 @@ export const ARQUETIPOS: Arquetipo[] = [
   },
   {
     id: 'noturno',
+    imagem: '/arquetipos/noturno.jpg',
     nome: 'Editorial Noturno',
     frase: 'Uma peça que ocupa a sala.',
     descricao:

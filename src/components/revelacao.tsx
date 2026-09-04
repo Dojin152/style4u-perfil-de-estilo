@@ -1,6 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'motion/react'
+import Image from 'next/image'
 import { Fragment, useEffect, useState } from 'react'
 import { CORES } from '@/lib/acervo'
 import { arquetipo } from '@/lib/arquetipos'
@@ -66,13 +67,13 @@ export function Revelacao({
   const estilos = comExposicaoMinima(perfil.estilos).slice(0, 3)
   const paleta = comExposicaoMinima(perfil.cores)
     .slice(0, 4)
-    .map((item) => CORES[item.chave] ?? '#17150f')
+    .map((item) => CORES[item.chave] ?? '#f4f1ea')
 
-  const fundoEscuro = passo === 4
+  const noArquetipo = passo === 4
 
   const conteudo = [
     <Fragment key="abertura">
-      <Rotulo escuro={fundoEscuro}>Perfil de estilo</Rotulo>
+      <Rotulo>Perfil de estilo</Rotulo>
       <Titulo>{perfil.batalhas} batalhas</Titulo>
       <Texto>
         {modo === 'direcao'
@@ -81,14 +82,17 @@ export function Revelacao({
       </Texto>
     </Fragment>,
     <Fragment key="cor">
-      <Rotulo escuro={fundoEscuro}>Cor</Rotulo>
+      <Rotulo>Cor</Rotulo>
       <Titulo>{destaque(cor, resumo)?.chave ?? 'sem dados'}</Titulo>
       <Texto>{frase(destaque(cor, resumo), resumo)}</Texto>
-      <div className="mt-6 flex gap-2">
+      <div className="mt-7 flex gap-2">
         {paleta.map((hex) => (
-          <span
+          <motion.span
             key={hex}
-            className="border-linha h-9 w-9 rounded-full border"
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 + paleta.indexOf(hex) * 0.06, type: 'spring', stiffness: 260 }}
+            className="border-linha-forte h-10 w-10 rounded-full border"
             style={{ background: hex }}
           />
         ))}
@@ -101,7 +105,7 @@ export function Revelacao({
       )}
     </Fragment>,
     <Fragment key="marca">
-      <Rotulo escuro={fundoEscuro}>Marca</Rotulo>
+      <Rotulo>Marca</Rotulo>
       <Titulo>{destaque(marca, resumo)?.chave ?? 'sem dados'}</Titulo>
       <Texto>{frase(destaque(marca, resumo), resumo)}</Texto>
       {resumo === 'indice' && marca.porParticipacao && (
@@ -112,10 +116,10 @@ export function Revelacao({
       )}
     </Fragment>,
     <Fragment key="ocasiao">
-      <Rotulo escuro={fundoEscuro}>Ocasião</Rotulo>
+      <Rotulo>Ocasião</Rotulo>
       <Titulo>{destaque(ocasiao, resumo)?.chave ?? 'sem dados'}</Titulo>
       <Texto>{frase(destaque(ocasiao, resumo), resumo)}</Texto>
-      <div className="mt-6 flex flex-wrap gap-1.5">
+      <div className="mt-7 flex flex-wrap gap-1.5">
         {estilos.map((estilo) => (
           <span
             key={estilo.chave}
@@ -127,12 +131,12 @@ export function Revelacao({
       </div>
     </Fragment>,
     <Fragment key="arquetipo">
-      <Rotulo escuro={fundoEscuro}>Seu arquétipo</Rotulo>
+      <Rotulo>Seu arquétipo</Rotulo>
       <Titulo pequeno={mistura}>
         {mistura ? vencedor.nome + ' com um pé em ' + vice.nome : vencedor.nome}
       </Titulo>
-      <Texto escuro>{vencedor.frase}</Texto>
-      <p className="mt-5 max-w-[280px] text-[13px] leading-relaxed text-white/65">
+      <Texto>{vencedor.frase}</Texto>
+      <p className="text-tinta-suave mt-5 max-w-[280px] text-[13px] leading-relaxed">
         {escala === 'centrado'
           ? 'Você está acima de ' +
             porcento(primeiro.percentil) +
@@ -152,6 +156,7 @@ export function Revelacao({
         segundo: mistura ? vice.nome : null,
         frase: vencedor.frase,
         tinta: vencedor.tinta,
+        imagem: vencedor.imagem,
         batalhas: perfil.batalhas,
         linhas: [
           { rotulo: 'Cor', valor: destaque(cor, resumo)?.chave ?? '-' },
@@ -166,31 +171,43 @@ export function Revelacao({
   ]
 
   return (
-    <div
-      className="relative h-full transition-colors duration-500"
-      style={{
-        background: fundoEscuro ? vencedor.tinta : undefined,
-        color: fundoEscuro ? '#f2efe9' : undefined,
-      }}
-    >
+    <div className="relative h-full overflow-hidden bg-[#0d0d0f]">
+      {/* A cor que a pessoa mais escolhe, como luz de fundo da revelação. */}
+      <div
+        aria-hidden
+        className="absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full blur-3xl transition-opacity duration-700"
+        style={{ background: paleta[0] ?? '#f4f1ea', opacity: noArquetipo ? 0 : 0.4 }}
+      />
+
+      <AnimatePresence>
+        {noArquetipo && (
+          <motion.div
+            initial={{ opacity: 0, scale: 1.06 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={vencedor.imagem}
+              alt=""
+              fill
+              sizes="360px"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(10,10,11,0.96)_18%,rgba(10,10,11,0.55)_58%,rgba(10,10,11,0.75)_100%)]" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="absolute inset-x-0 top-0 z-20 flex gap-1 px-4 pt-11">
         {Array.from({ length: PASSOS }, (_, i) => (
-          <span
-            key={i}
-            className="h-[2px] flex-1 rounded-full"
-            style={{
-              background: fundoEscuro ? 'rgba(242,239,233,0.28)' : 'var(--linha)',
-            }}
-          >
+          <span key={i} className="bg-linha h-[2px] flex-1 overflow-hidden rounded-full">
             <motion.span
-              className="block h-full rounded-full"
+              className="bg-tinta block h-full origin-left rounded-full"
               initial={false}
               animate={{ scaleX: i <= passo ? 1 : 0 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                background: fundoEscuro ? '#f2efe9' : 'var(--tinta)',
-                transformOrigin: 'left',
-              }}
             />
           </span>
         ))}
@@ -200,8 +217,7 @@ export function Revelacao({
         type="button"
         onClick={aoSair}
         aria-label="Sair da revelação"
-        className="absolute top-[54px] right-4 z-30 text-[18px] leading-none opacity-40 transition-opacity hover:opacity-80"
-        style={{ color: fundoEscuro ? '#f2efe9' : 'var(--tinta)' }}
+        className="text-tinta absolute top-[52px] right-4 z-30 text-[18px] leading-none opacity-45 transition-opacity hover:opacity-90"
       >
         ×
       </button>
@@ -210,16 +226,16 @@ export function Revelacao({
         <AnimatePresence mode="wait">
           <motion.div
             key={passo}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            className="pointer-events-none flex h-full flex-col [&_button]:pointer-events-auto [&_canvas]:pointer-events-auto"
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
+            className="flex h-full flex-col [&_button]:pointer-events-auto [&_canvas]:pointer-events-auto"
           >
             {passo === PASSOS - 1 ? (
               conteudo[passo]
             ) : (
-              <div className="flex h-full flex-col justify-center px-6">{conteudo[passo]}</div>
+              <div className="flex h-full flex-col justify-end px-6 pb-6">{conteudo[passo]}</div>
             )}
           </motion.div>
         </AnimatePresence>
@@ -246,15 +262,15 @@ export function Revelacao({
 }
 
 /**
- * The state everybody forgets to design. With ten battles the distance between
- * the first and the second archetype is noise, and naming one of them is the
- * kind of mistake a user notices and repeats to a friend.
+ * O estado que quase ninguém desenha. Com dez batalhas a distância entre o
+ * primeiro e o segundo arquétipo é ruído, e nomear um deles é o tipo de erro que
+ * o usuário percebe e conta para os amigos.
  */
 function Incompleto({ perfil, aoSair }: { perfil: Perfil; aoSair: () => void }) {
   const feito = perfil.batalhas / MIN_BATALHAS
 
   return (
-    <div className="flex h-full flex-col justify-center px-6 pt-11 pb-6 text-center">
+    <div className="flex h-full flex-col justify-center bg-[#0d0d0f] px-6 pt-11 pb-6 text-center">
       <span className="rotulo">Ainda não</span>
       <p className="font-serifa mt-3 text-[34px] leading-[1.08]">
         Faltam {perfil.faltam} batalhas
@@ -307,26 +323,16 @@ function frase(item: Agregado | undefined, resumo: 'dominante' | 'indice') {
     : 'Esteve em ' + porcento(item.participacao) + ' das suas escolhas.'
 }
 
-function Rotulo({ children, escuro }: { children: React.ReactNode; escuro: boolean }) {
-  return (
-    <span className="rotulo" style={escuro ? { color: 'rgba(242,239,233,0.55)' } : undefined}>
-      {children}
-    </span>
-  )
+function Rotulo({ children }: { children: React.ReactNode }) {
+  return <span className="rotulo">{children}</span>
 }
 
-function Titulo({
-  children,
-  pequeno,
-}: {
-  children: React.ReactNode
-  pequeno?: boolean
-}) {
+function Titulo({ children, pequeno }: { children: React.ReactNode; pequeno?: boolean }) {
   return (
     <h2
       className={
-        'font-serifa mt-3 leading-[1.03] tracking-[-0.01em] ' +
-        (pequeno ? 'text-[31px]' : 'text-[38px]')
+        'font-serifa mt-3 leading-[1.02] tracking-[-0.015em] ' +
+        (pequeno ? 'text-[32px]' : 'text-[40px]')
       }
     >
       {children}
@@ -334,22 +340,15 @@ function Titulo({
   )
 }
 
-function Texto({ children, escuro }: { children: React.ReactNode; escuro?: boolean }) {
+function Texto({ children }: { children: React.ReactNode }) {
   return (
-    <p
-      className={
-        'mt-4 max-w-[280px] text-[14px] leading-relaxed ' +
-        (escuro ? 'text-white/75' : 'text-tinta-suave')
-      }
-    >
-      {children}
-    </p>
+    <p className="text-tinta-suave mt-4 max-w-[280px] text-[14px] leading-relaxed">{children}</p>
   )
 }
 
 function Nota({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-tinta-tenue mt-7 max-w-[270px] border-t pt-3 text-[11px] leading-relaxed">
+    <p className="text-tinta-tenue border-linha mt-7 max-w-[270px] border-t pt-3 text-[11px] leading-relaxed">
       {children}
     </p>
   )

@@ -1,8 +1,10 @@
 import { ACERVO, EIXOS, look, type Eixo, type Look } from './acervo'
 import { CONJUNTO, EIXO_COMUM, VERSAO_DO_CONJUNTO } from './arquetipos'
+import { PALAVRA_DO_EIXO } from './eixos'
 import { vetorDoPerfil, type Batalha, type ModoVetor } from './gosto'
 import { estatisticas } from './populacao'
-import { cosseno, percentil, remover, type Vetor } from './vetores'
+import { montarPlano, projetar, type Ponto } from './projecao'
+import { cosseno, norma, percentil, remover, type Vetor } from './vetores'
 
 export type { Batalha, ModoVetor } from './gosto'
 export { vetorDoPerfil } from './gosto'
@@ -26,11 +28,32 @@ export interface Pontuacao {
   percentil: number
 }
 
+export interface Contribuicao {
+  eixo: Eixo
+  palavra: string
+  peso: number
+}
+
 export interface Variante {
   modo: ModoVetor
   pontuacoes: Pontuacao[]
   margem: number
   mistura: boolean
+  /** Onde o usuário cai no mesmo plano em que os arquétipos foram desenhados. */
+  ponto: Ponto
+  /** O que puxou o resultado para o primeiro colocado, e o que puxou contra. */
+  explicacao: Contribuicao[]
+}
+
+export interface PontoDoMapa extends Ponto {
+  arquetipo: string
+}
+
+export interface Marco {
+  batalha: number
+  lider: string
+  z: number
+  margem: number
 }
 
 export interface Agregado {
@@ -49,6 +72,8 @@ export interface Perfil {
   completo: boolean
   faltam: number
   variantes: Record<ModoVetor, Variante>
+  mapa: PontoDoMapa[]
+  historico: Record<ModoVetor, Marco[]>
   cores: Agregado[]
   marcas: Agregado[]
   ocasioes: Agregado[]
@@ -76,16 +101,103 @@ function pontuar(vetor: Vetor, modo: ModoVetor): Pontuacao[] {
   return pontuacoes.sort((a, b) => b.z - a.z)
 }
 
+/**
+ * O plano do mapa sai só do conjunto de referências, nunca dos usuários: assim
+ * ele não se mexe quando alguém joga mais uma batalha, e duas pessoas podem ser
+ * comparadas no mesmo desenho.
+ */
+const PLANO = montarPlano(CONJUNTO.map((arquetipo) => remover(arquetipo.centroide, EIXO_COMUM)))
+
+const MAPA: PontoDoMapa[] = CONJUNTO.map((arquetipo) => ({
+  arquetipo: arquetipo.id,
+  ...projetar(PLANO, remover(arquetipo.centroide, EIXO_COMUM)),
+}))
+
+/**
+ * Cosseno é uma soma sobre os eixos, então dá para dizer de onde ele veio: cada
+ * parcela é a contribuição daquele eixo para o resultado, e o sinal diz se o
+ * eixo puxou a favor ou contra.
+ */
+function explicar(vetor: Vetor, centroide: Vetor): Contribuicao[] {
+  const u = remover(vetor, EIXO_COMUM)
+  const a = remover(centroide, EIXO_COMUM)
+  const divisor = norma(u) * norma(a)
+  if (divisor === 0) return []
+
+  const parcelas = EIXOS.map((eixo, i) => ({
+    eixo,
+    palavra: PALAVRA_DO_EIXO[eixo],
+    peso: ((u[i] ?? 0) * (a[i] ?? 0)) / divisor,
+  }))
+
+  const total = parcelas.reduce((acc, item) => acc + Math.abs(item.peso), 0)
+
+  return parcelas
+    .map((item) => ({ ...item, peso: total === 0 ? 0 : item.peso / total }))
+    .sort((x, y) => Math.abs(y.peso) - Math.abs(x.peso))
+    .slice(0, 6)
+}
+
 function variante(batalhas: Batalha[], modo: ModoVetor): Variante {
-  const pontuacoes = pontuar(vetorDoPerfil(batalhas, modo), modo)
+  const vetor = vetorDoPerfil(batalhas, modo)
+  const pontuacoes = pontuar(vetor, modo)
   const margem = (pontuacoes[0]?.z ?? 0) - (pontuacoes[1]?.z ?? 0)
+  const primeiro = pontuacoes[0]
 
   return {
     modo,
     pontuacoes,
     margem,
     mistura: batalhas.length > 0 && margem < MARGEM_DE_MISTURA,
+    ponto: projetar(PLANO, remover(vetor, EIXO_COMUM)),
+    explicacao:
+      batalhas.length === 0 || !primeiro
+        ? []
+        : explicar(vetor, CONJUNTO.find((a) => a.id === primeiro.arquetipo)?.centroide ?? vetor),
   }
+}
+
+/** No máximo esta quantidade de pontos na linha do tempo, seja qual for o número de batalhas. */
+const PASSOS_DO_HISTORICO = 26
+
+/**
+ * O perfil recalculado a cada passo, do começo até agora. É o que mostra que o
+ * arquétipo não aparece pronto: ele se firma, e às vezes troca de líder no meio.
+ */
+function historico(batalhas: Batalha[], modo: ModoVetor): Marco[] {
+  if (batalhas.length === 0) return []
+
+  const salto = Math.max(1, Math.ceil(batalhas.length / PASSOS_DO_HISTORICO))
+  const marcos: Marco[] = []
+
+  for (let ate = 1; ate <= batalhas.length; ate += salto) {
+    const pontuacoes = pontuar(vetorDoPerfil(batalhas.slice(0, ate), modo), modo)
+    const primeiro = pontuacoes[0]
+    if (!primeiro) continue
+
+    marcos.push({
+      batalha: ate,
+      lider: primeiro.arquetipo,
+      z: primeiro.z,
+      margem: primeiro.z - (pontuacoes[1]?.z ?? 0),
+    })
+  }
+
+  const ultimo = marcos[marcos.length - 1]
+  if (ultimo && ultimo.batalha !== batalhas.length) {
+    const pontuacoes = pontuar(vetorDoPerfil(batalhas, modo), modo)
+    const primeiro = pontuacoes[0]
+    if (primeiro) {
+      marcos.push({
+        batalha: batalhas.length,
+        lider: primeiro.arquetipo,
+        z: primeiro.z,
+        margem: primeiro.z - (pontuacoes[1]?.z ?? 0),
+      })
+    }
+  }
+
+  return marcos
 }
 
 /**
@@ -194,6 +306,11 @@ export function calcularPerfil(batalhas: Batalha[], agora = new Date()): Perfil 
     variantes: {
       media: variante(validas, 'media'),
       direcao: variante(validas, 'direcao'),
+    },
+    mapa: MAPA,
+    historico: {
+      media: historico(validas, 'media'),
+      direcao: historico(validas, 'direcao'),
     },
     cores: agregar(validas, (item) => item.cores),
     marcas: agregar(validas, (item) => [item.marca]),

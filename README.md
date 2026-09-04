@@ -7,6 +7,11 @@ compartilhamento da peça como imagem.
 Não é um protótipo de telas. A matemática roda de verdade, o endpoint responde de verdade e
 os interruptores do painel da direita trocam a implementação viva, não uma legenda.
 
+Além dos quatro entregáveis, a página abre o que costuma ficar escondido: o mapa do conjunto
+de referências em duas dimensões com a sua posição dentro dele, a decomposição do resultado
+eixo por eixo, a linha do tempo do perfil recalculado depois de cada batalha e o acervo
+inteiro que o endpoint lê.
+
 ## Rodar
 
 ```bash
@@ -16,8 +21,8 @@ npm test         # a matemática de similaridade
 npm run build
 ```
 
-Node 20.9 ou mais novo. Nenhuma variável de ambiente, nenhum serviço externo, nenhuma imagem
-de terceiros: a página abre offline depois de instalada.
+Node 20.9 ou mais novo. Nenhuma variável de ambiente e nenhuma chamada a terceiro em tempo de
+execução: fontes, fotografias e dados são servidos pelo próprio projeto.
 
 ## Publicar na Vercel
 
@@ -56,6 +61,27 @@ ainda não formado, com quantas batalhas faltam, e empate técnico entre os dois
 arquétipos, revelado como mistura em vez de rótulo. A persona `Dividida` cai nesse caso de
 propósito.
 
+## O que dá para ver além das telas
+
+**O mapa.** Os seis centróides achatados em duas dimensões pelas suas próprias direções de
+maior variação, com o seu perfil posicionado dentro do mesmo plano. O plano sai só das
+referências, então ele não se mexe quando alguém joga mais uma batalha, e dois perfis podem
+ser comparados no mesmo desenho. Serve para ver uma coisa que a lista de pontuações esconde:
+arquétipos que o texto separa bem podem estar colados no espaço, e é contra isso que a regra
+de mistura protege a tela.
+
+**Por que este arquétipo.** Cosseno é uma soma sobre os eixos, então dá para devolver de onde
+ele veio: cada parcela é a contribuição de um eixo, e o sinal diz se puxou a favor ou contra.
+É a diferença entre uma tela que anuncia um rótulo e uma que aguenta ser questionada.
+
+**A linha do tempo.** O mesmo perfil recalculado depois de cada batalha, com as trocas de
+líder e a margem se abrindo. Deixa visível que o arquétipo não chega pronto, que é o
+argumento por trás do mínimo de batalhas e do estado de perfil incompleto.
+
+**O acervo.** As trinta e seis peças com marca, ocasião, cores e etiquetas, filtráveis por
+ocasião, e com o seu retrospecto em cada uma depois de jogar. Toda afirmação sobre gosto vale
+o que vale o acervo que a produziu.
+
 ## Estrutura
 
 | Arquivo | O que faz |
@@ -67,9 +93,13 @@ propósito.
 | `src/lib/arquetipos.ts` | Referências por arquétipo, centróides e a versão do conjunto. |
 | `src/lib/populacao.ts` | A base contra a qual cada perfil é posicionado. |
 | `src/lib/vetores.ts` | Cosseno, remoção do eixo comum, percentil. |
-| `src/lib/cartao.ts` | A imagem compartilhável, desenhada em 1080 por 1350. |
+| `src/lib/cartao.ts` | A imagem compartilhável, desenhada em 1080 de largura nos dois formatos. |
+| `src/lib/projecao.ts` | O plano de duas dimensões, por iteração de potência. |
+| `src/components/mapa.tsx` | O mapa dos arquétipos e a sua posição nele. |
+| `src/components/linha-do-tempo.tsx` | O perfil batalha a batalha. |
+| `src/components/acervo.tsx` | O acervo aberto para inspeção. |
 | `src/components/revelacao.tsx` | A tela de revelação, seus seis passos e os dois estados de exceção. |
-| `src/lib/perfil.test.ts` | Os testes da matemática, com vetores e batalhas fixas. |
+| `src/lib/perfil.test.ts` | Os dezessete testes da matemática, com vetores e batalhas fixas. |
 
 ## Como isso mapeia no Style4U
 
@@ -84,11 +114,14 @@ tela e entregue à folha nativa de compartilhamento.
 
 ## O que é real e o que está encenado
 
-Real: as agregações, a similaridade e sua correção, o instantâneo versionado, a imagem
-compartilhável e o caminho até a folha nativa quando o navegador tem uma, os testes.
+Real: as agregações, a similaridade e sua correção, a projeção do mapa, a decomposição por
+eixo, a linha do tempo, o instantâneo versionado, a imagem compartilhável e o caminho até a
+folha nativa quando o navegador tem uma, os testes.
 
 Encenado: as fotos do catálogo, que aqui são desenhadas a partir das etiquetas de cada look
-porque imagem de loja parceira não entra numa demonstração pública; as imagens de referência
-dos arquétipos, geradas a partir de um protótipo com semente fixa; a base de usuários que
-calibra a posição de cada perfil, que é uma população sintética de quatrocentas pessoas; e a
-persistência, já que as batalhas vivem no navegador e vão inteiras no corpo da requisição.
+porque imagem de loja parceira não entra numa demonstração pública; as fotografias dos seis
+arquétipos, que vêm de banco de imagens livre e ocupam o lugar do material que você vai
+fornecer, com os identificadores listados em `CREDITOS.md`; os vetores das referências,
+gerados a partir de um protótipo com semente fixa; a base de usuários que calibra a posição de
+cada perfil, que é uma população sintética de quatrocentas pessoas; e a persistência, já que
+as batalhas vivem no navegador e vão inteiras no corpo da requisição.
